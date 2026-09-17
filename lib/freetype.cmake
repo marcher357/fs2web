@@ -1,5 +1,11 @@
 
-if(PLATFORM_WINDOWS OR PLATFORM_MAC OR CMAKE_CROSSCOMPILING)
+if(EMSCRIPTEN)
+	message(STATUS "Using Emscripten's built-in Freetype port.")
+
+	add_library(freetype INTERFACE)
+	target_compile_options(freetype INTERFACE "-sUSE_FREETYPE=1")
+	target_link_options(freetype INTERFACE "-sUSE_FREETYPE=1")
+elseif(PLATFORM_WINDOWS OR PLATFORM_MAC OR CMAKE_CROSSCOMPILING)
 	add_library(freetype INTERFACE)
 
 	# We use prebuilt binaries for windows and mac

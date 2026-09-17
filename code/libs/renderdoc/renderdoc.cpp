@@ -1,8 +1,25 @@
 
 #include "renderdoc.h"
-#include "renderdoc_app.h"
 
 #include "globalincs/pstypes.h"
+
+// RenderDoc is a native GPU debugging tool; it has no browser equivalent and
+// renderdoc_app.h doesn't know about the Emscripten target, so stub it out entirely.
+#ifdef __EMSCRIPTEN__
+
+namespace renderdoc {
+
+bool loadApi() { return false; }
+void triggerCapture() {}
+void startCapture() {}
+bool isCapturing() { return false; }
+void endCapture() {}
+
+}
+
+#else
+
+#include "renderdoc_app.h"
 
 #ifdef SCP_UNIX
 #include <dlfcn.h>
@@ -81,3 +98,5 @@ void endCapture() {
 }
 
 }
+
+#endif // __EMSCRIPTEN__

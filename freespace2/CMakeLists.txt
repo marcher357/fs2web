@@ -27,6 +27,20 @@ include(resources.cmake)
 
 SET_TARGET_PROPERTIES(Freespace2 PROPERTIES OUTPUT_NAME "fs2_open_${FSO_BINARY_SUFFIX}")
 
+IF(EMSCRIPTEN)
+	SET_TARGET_PROPERTIES(Freespace2 PROPERTIES SUFFIX ".html")
+	target_link_options(Freespace2 PRIVATE
+		"-sUSE_WEBGL2=1"
+		"-sFULL_ES3=1"
+		"-sALLOW_MEMORY_GROWTH=1"
+		"-sASSERTIONS=1"
+		"-sEXIT_RUNTIME=0"
+		"-lopenal"
+		"--pre-js=${CMAKE_CURRENT_SOURCE_DIR}/web/pre.js"
+	)
+	set_target_properties(Freespace2 PROPERTIES LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/web/pre.js")
+ENDIF()
+
 TARGET_LINK_LIBRARIES(Freespace2 code)
 TARGET_LINK_LIBRARIES(Freespace2 platform)
 TARGET_LINK_LIBRARIES(Freespace2 compiler)

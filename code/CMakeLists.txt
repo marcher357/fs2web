@@ -89,10 +89,10 @@ IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	target_link_libraries(code PUBLIC ${X11_LIBRARIES})
 ENDIF()
 
-# Headers for standalone "gui" on UNIX
-IF(UNIX)
+# Headers for standalone "gui" on UNIX (not applicable to the web target)
+IF(UNIX AND NOT EMSCRIPTEN)
 	TARGET_LINK_LIBRARIES(code PUBLIC ${MONGOOSE_LIBS})
-ENDIF(UNIX)
+ENDIF(UNIX AND NOT EMSCRIPTEN)
 
 IF(FSO_BUILD_TOOLS)
 	ADD_SUBDIRECTORY(cfilearchiver)

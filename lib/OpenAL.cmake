@@ -1,6 +1,11 @@
 
+IF(EMSCRIPTEN)
+    message(STATUS "Using Emscripten's built-in OpenAL (OpenAL Soft / Web Audio) support.")
+
+    add_library(openal INTERFACE)
+    target_link_options(openal INTERFACE "-lopenal")
 # We have precompiled libs for windows
-IF (WIN32)
+ELSEIF (WIN32)
     get_prebuilt_path(PREBUILT_PATH)
 
     add_library(openal SHARED IMPORTED GLOBAL)
@@ -66,4 +71,4 @@ ELSE(WIN32)
         file(GLOB OpenAL_LIBS "${OpenAL_ROOT_DIR}/lib/libopenal*")
         add_target_copy_files("${OpenAL_LIBS}")
     endif()
-ENDIF(WIN32)
+ENDIF()

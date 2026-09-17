@@ -20,6 +20,8 @@
 
 #ifdef _WIN32
 struct fd_set;
+#else
+#include <sys/select.h>
 #endif
 struct timeval;
 

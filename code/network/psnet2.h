@@ -18,6 +18,7 @@
 #include <ws2tcpip.h>
 #else
 #include <netinet/in.h>
+#include <sys/select.h>
 #include <cerrno>
 #endif
 

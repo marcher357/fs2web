@@ -110,7 +110,16 @@
     S6_ADDR32(x)[1] = 0;                                                       \
     S6_ADDR32(x)[2] = htonl(0xFFFF);
 
-#ifdef USE_NETLINK
+#if defined(__EMSCRIPTEN__)
+
+// A browser sandbox has no netlink/routing-table access, so NAT-PMP gateway discovery
+// (and therefore NAT-PMP port forwarding as a whole) is simply unavailable on the web.
+int getgateways(struct sockaddr_in6 **gws) {
+    (void)gws;
+    return 0;
+}
+
+#elif defined(USE_NETLINK)
 
 #define BUFSIZE 8192
 

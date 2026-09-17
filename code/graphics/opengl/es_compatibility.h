@@ -32,6 +32,7 @@
 #define GL_CLAMP_VERTEX_COLOR					0x891A
 #define GL_CLAMP_FRAGMENT_COLOR					0x891B
 #define GL_FIXED_ONLY							0x891D
+#define GL_DEPTH_CLAMP						    0x864F // Not in ES core; glEnable/glDisable become harmless no-ops without GL_EXT_depth_clamp
 
 //Enums Redefinitions
 #define GL_CLIP_DISTANCE0						GL_CLIP_DISTANCE0_EXT // GL_EXT_clip_cull_distance
@@ -48,6 +49,7 @@
 #define GLAD_GL_ARB_texture_storage				GL_TRUE // ES 3.2
 #define GLAD_GL_ARB_draw_buffers_blend			GL_TRUE // ES 3.2 (glBlendFunci and glBlendEquationi)
 #define GLAD_GL_ARB_vertex_attrib_binding		GL_TRUE // ES 3.1
+#define GLAD_GL_ARB_shader_viewport_layer_array	GL_FALSE // No layered-rendering equivalent on ES (no geometry shaders)
 
 //Functions Redefinitions
 #define glBlendFunciARB					glBlendFunci // ES 3.2

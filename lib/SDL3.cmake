@@ -1,5 +1,11 @@
 
-if(PLATFORM_WINDOWS)
+if(EMSCRIPTEN)
+    message(STATUS "Using Emscripten's built-in SDL3 port.")
+
+    add_library(sdl3 INTERFACE)
+    target_compile_options(sdl3 INTERFACE "-sUSE_SDL=3")
+    target_link_options(sdl3 INTERFACE "-sUSE_SDL=3")
+elseif(PLATFORM_WINDOWS)
     get_prebuilt_path(PREBUILT_PATH)
     set(SDL3_ROOT_DIR "${PREBUILT_PATH}/sdl3")
 

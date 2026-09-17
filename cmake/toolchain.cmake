@@ -5,6 +5,13 @@ add_library(compiler INTERFACE)
 
 target_compile_definitions(compiler INTERFACE "$<$<CONFIG:Release>:NDEBUG>;$<$<CONFIG:Debug>:_DEBUG>;$<$<CONFIG:FastDebug>:_DEBUG>")
 
+IF(EMSCRIPTEN)
+	# The engine relies on real C++ exceptions in places; Emscripten disables exception
+	# catching by default (it just aborts on throw otherwise), so turn it back on.
+	target_compile_options(compiler INTERFACE "-fexceptions")
+	target_link_options(compiler INTERFACE "-fexceptions")
+ENDIF()
+
 set(FORCED_NATIVE_SIMD_INSTRUCTIONS ON CACHE BOOL "Override instruction set detection and compile with the maximum possible instructions for the current system.")
 IF(IS_X86)
 	SET(POSSIBLE_INSTRUCTION_SETS "" SSE SSE2 AVX AVX2)

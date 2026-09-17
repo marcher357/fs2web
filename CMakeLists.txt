@@ -56,7 +56,7 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/finder")
 
 # this must be set before include(toolchain)
-if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+if((WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4) OR EMSCRIPTEN)
 	set(FSO_BUILD_QTFRED OFF CACHE INTERNAL "" FORCE)
 else()
 	OPTION(FSO_BUILD_QTFRED "Build qtFRED2 binary" ON)
@@ -99,8 +99,8 @@ OPTION(FSO_BUILD_TESTS "Build unit tests" OFF)
 
 OPTION(FSO_DEVELOPMENT_MODE "Generate binaries in development mode, only use if you know what you're doing!" OFF)
 
-IF(WIN32 OR APPLE)
-	# On windows and mac the default should be to always build the included libraries
+IF(WIN32 OR APPLE OR EMSCRIPTEN)
+	# On windows, mac, and web there is no usable system copy of these libs, so always build them
 	SET(FSO_BUILD_INCLUDED_LIBS_DEFAULT ON)
 ELSE()
 	SET(FSO_BUILD_INCLUDED_LIBS_DEFAULT OFF)
@@ -122,15 +122,32 @@ option(FSO_INSTALL_DEBUG_FILES "Install some debug files (currently only PDB fil
 
 option(FSO_RELEASE_LOGGING "Enable logging output for release builds" OFF)
 
-OPTION(FSO_BUILD_WITH_FFMPEG "Enable the usage of FFmpeg for sound and custscenes" ON)
+IF(EMSCRIPTEN)
+	# No cutscene playback or Discord rich-presence in the web build (yet)
+	SET(FSO_BUILD_WITH_FFMPEG_DEFAULT OFF)
+	SET(FSO_BUILD_WITH_DISCORD_DEFAULT OFF)
+	SET(FSO_BUILD_WITH_OPENGL_ES_DEFAULT ON)
+	SET(FSO_BUILD_WITH_VULKAN_DEFAULT OFF)
+ELSE()
+	SET(FSO_BUILD_WITH_FFMPEG_DEFAULT ON)
+	SET(FSO_BUILD_WITH_DISCORD_DEFAULT ON)
+	SET(FSO_BUILD_WITH_OPENGL_ES_DEFAULT OFF)
+	SET(FSO_BUILD_WITH_VULKAN_DEFAULT ON)
+ENDIF()
 
-OPTION(FSO_BUILD_WITH_DISCORD "Build with Discord support" ON)
+OPTION(FSO_BUILD_WITH_FFMPEG "Enable the usage of FFmpeg for sound and custscenes" ${FSO_BUILD_WITH_FFMPEG_DEFAULT})
+
+OPTION(FSO_BUILD_WITH_DISCORD "Build with Discord support" ${FSO_BUILD_WITH_DISCORD_DEFAULT})
 
 OPTION(FSO_BUILD_WITH_OPENGL "Enable compilation of the OpenGL renderer" ON)
 OPTION(FSO_BUILD_WITH_OPENGL_DEBUG "Enables debug option for OpenGL" OFF)
-OPTION(FSO_BUILD_WITH_OPENGL_ES "When building OpenGL, use OpenGL ES compatibility layer (External shaders only!)" OFF)
+OPTION(FSO_BUILD_WITH_OPENGL_ES "When building OpenGL, use OpenGL ES compatibility layer (External shaders only!)" ${FSO_BUILD_WITH_OPENGL_ES_DEFAULT})
 
-OPTION(FSO_BUILD_WITH_VULKAN "Enable compilation of the Vulkan renderer" ON)
+OPTION(FSO_BUILD_WITH_VULKAN "Enable compilation of the Vulkan renderer" ${FSO_BUILD_WITH_VULKAN_DEFAULT})
+IF(EMSCRIPTEN AND FSO_BUILD_WITH_VULKAN)
+	MESSAGE(WARNING "FSO_BUILD_WITH_VULKAN is ON. Vulkan is not supported on the web target - setting to OFF.")
+	SET(FSO_BUILD_WITH_VULKAN OFF CACHE BOOL "" FORCE)
+ENDIF()
 
 if(NOT FSO_BUILD_WITH_OPENGL AND FSO_BUILD_WITH_OPENGL_ES)
 	# Disable GLES if not building with OpenGL

@@ -6,7 +6,7 @@
 #include <direct.h>
 #endif
 
-#if !defined __APPLE_CC__ && defined SCP_UNIX
+#if !defined __APPLE_CC__ && defined SCP_UNIX && !defined __EMSCRIPTEN__
 #include<glad/glad_glx.h>
 //Required because X defines none and always, which is used later
 #undef None
@@ -50,8 +50,13 @@
 
 #include <glad/glad.h>
 
-// minimum GL / GLES version we can reliably support is 3.2
+// minimum GL / GLES version we can reliably support is 3.2, but WebGL2 (the web target's
+// ceiling in every browser today) only ever reports as GLES 3.0, so relax the requirement there.
+#ifdef __EMSCRIPTEN__
+static const int MIN_REQUIRED_GL_VERSION = 30;
+#else
 static const int MIN_REQUIRED_GL_VERSION = 32;
+#endif
 
 // minimum GLSL version we can reliably support is 110
 static const int MIN_REQUIRED_GLSL_VERSION = 150;
@@ -1011,7 +1016,16 @@ int opengl_init_display_device()
 		return 1;
 	}
 
+#ifdef __EMSCRIPTEN__
+	// WebGL context creation doesn't reject unsupported major/minor requests the way real
+	// GL/GLES drivers do -- it only ever produces WebGL1 or WebGL2, chosen by whether the
+	// requested major version is exactly 3 (see SDL's Emscripten_GLES_CreateContext). Trying
+	// the desktop-style version-negotiation ladder below would spuriously "succeed" at the
+	// first (wrong, WebGL1) attempt, so just request the one version WebGL2 actually needs.
+	const int gl_versions[] = { MIN_REQUIRED_GL_VERSION };
+#else
 	const int gl_versions[] = { 45, 44, 43, 42, 41, 40, 33, 32 };
+#endif
 
 	// find the latest and greatest OpenGL context
 	for (auto ver : gl_versions)
@@ -1394,7 +1408,7 @@ bool gr_opengl_init(std::unique_ptr<os::GraphicsOperations>&& graphicsOps)
 		Error(LOCATION, "Failed to load OpenGL!");
 	}
 
-#if !defined __APPLE_CC__ && defined SCP_UNIX
+#if !defined __APPLE_CC__ && defined SCP_UNIX && !defined __EMSCRIPTEN__
 	if (!gladLoadGLXLoader(GL_context->getLoaderFunction(), nullptr, 0)) {
 		Error(LOCATION, "Failed to load GLX!");
 	}

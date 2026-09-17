@@ -18,10 +18,10 @@ endif()
 include(SDL3.cmake)
 
 ADD_SUBDIRECTORY(jansson)
-# These are only required for the web-ui which is non-Windows
-IF(UNIX)
+# These are only required for the web-ui which is non-Windows and not our own web (Emscripten) target
+IF(UNIX AND NOT EMSCRIPTEN)
 	ADD_SUBDIRECTORY(mongoose)
-ENDIF(UNIX)
+ENDIF(UNIX AND NOT EMSCRIPTEN)
 
 add_subdirectory(md5)
 

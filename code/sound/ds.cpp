@@ -125,6 +125,10 @@ static const EFXREVERBPROPERTIES_list EFX_Reverb_Defaults[EAX_ENVIRONMENT_COUNT]
 
 SCP_vector<EFXREVERBPROPERTIES> EFX_presets;
 
+// Emscripten's minimal AL/al.h doesn't define this calling-convention macro (it's a no-op outside Windows anyway)
+#ifndef AL_APIENTRY
+#define AL_APIENTRY
+#endif
 
 typedef ALvoid (AL_APIENTRY * ALGENFILTERS) (ALsizei, ALuint*);
 typedef ALvoid (AL_APIENTRY * ALDELETEFILTERS) (ALsizei, ALuint*);
