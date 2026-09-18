@@ -1,0 +1,341 @@
+:root{
+  --bg:#05070c;
+  --bg-deep:#020308;
+  --panel:#0c1420;
+  --panel-line:#1c2e40;
+  --cyan:#4de8ff;
+  --cyan-dim:#1e5a6e;
+  --amber:#ffb347;
+  --hostile:#ff4d5e;
+  --shield:#5ad1ff;
+  --hull-ok:#6dffb0;
+  --hull-warn:#ffcf4d;
+  --hull-crit:#ff5d5d;
+  --text-dim:#7fa3b8;
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{
+  background:var(--bg);
+  color:var(--cyan);
+  font-family:'Exo 2', ui-sans-serif, system-ui, sans-serif;
+  overflow:hidden;
+  -webkit-user-select:none;
+  user-select:none;
+}
+#stage{
+  position:relative;
+  width:100%;
+  height:100%;
+  min-height:560px;
+  background:#000;
+}
+#three-mount{position:absolute;inset:0;}
+#three-mount canvas{display:block;width:100%;height:100%;cursor:none;}
+
+/* ---------- Start / End overlays ---------- */
+.overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(ellipse at 50% 40%, rgba(15,30,45,.92) 0%, rgba(2,3,8,.97) 75%);
+  z-index:20;
+  padding:24px;
+}
+.overlay[hidden]{display:none;}
+.panel{
+  width:min(580px, 100%);
+  border:1px solid var(--panel-line);
+  background:linear-gradient(180deg, rgba(15,25,38,.9), rgba(8,14,22,.9));
+  border-radius:4px;
+  padding:32px clamp(20px,5vw,40px);
+  box-shadow:0 0 0 1px rgba(77,232,255,.08), 0 0 40px rgba(77,232,255,.06);
+  text-align:center;
+  max-height:90vh;
+  overflow-y:auto;
+}
+.eyebrow{
+  font-family:'Orbitron', sans-serif;
+  font-size:11px;
+  letter-spacing:.35em;
+  color:var(--text-dim);
+  text-transform:uppercase;
+  margin:0 0 10px;
+}
+.title{
+  font-family:'Orbitron', sans-serif;
+  font-weight:900;
+  font-size:clamp(26px,6vw,40px);
+  margin:0 0 6px;
+  color:#eafcff;
+  text-shadow:0 0 18px rgba(77,232,255,.45);
+  letter-spacing:.02em;
+  text-wrap:balance;
+}
+.subtitle{
+  color:var(--text-dim);
+  font-size:13.5px;
+  margin:0 0 20px;
+  line-height:1.5;
+  text-align:left;
+}
+.briefing{
+  text-align:left;
+  font-size:12.5px;
+  line-height:1.6;
+  color:#bcd8e6;
+  background:rgba(0,0,0,.25);
+  border:1px solid var(--panel-line);
+  border-left:2px solid var(--cyan-dim);
+  border-radius:3px;
+  padding:12px 14px;
+  margin:0 0 18px;
+}
+.briefing b{color:var(--cyan);}
+.controls-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px 20px;
+  text-align:left;
+  margin:0 0 24px;
+  padding:14px 16px;
+  border:1px solid var(--panel-line);
+  border-radius:3px;
+  background:rgba(0,0,0,.25);
+}
+.ctrl-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;}
+.ctrl-row kbd{
+  font-family:'Orbitron', sans-serif;
+  font-size:10px;
+  color:var(--cyan);
+  border:1px solid var(--cyan-dim);
+  border-radius:2px;
+  padding:2px 6px;
+  background:rgba(77,232,255,.06);
+  white-space:nowrap;
+}
+.ctrl-row span.lbl{color:var(--text-dim);}
+.btn{
+  font-family:'Orbitron', sans-serif;
+  font-weight:700;
+  font-size:15px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#04141a;
+  background:linear-gradient(180deg, #7cf3ff, var(--cyan));
+  border:none;
+  border-radius:3px;
+  padding:14px 30px;
+  cursor:pointer;
+  box-shadow:0 0 22px rgba(77,232,255,.35);
+}
+.btn:hover{filter:brightness(1.08);}
+.btn:active{transform:translateY(1px);}
+.end-stats{
+  display:flex;
+  justify-content:center;
+  gap:28px;
+  margin:0 0 26px;
+}
+.stat{display:flex;flex-direction:column;gap:4px;}
+.stat b{font-family:'Orbitron', sans-serif;font-size:22px;color:#eafcff;font-variant-numeric:tabular-nums;}
+.stat span{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);}
+.result-line{
+  font-family:'Orbitron', sans-serif;
+  font-weight:700;
+  font-size:20px;
+  letter-spacing:.08em;
+  margin:0 0 4px;
+}
+.result-line.win{color:var(--hull-ok);text-shadow:0 0 16px rgba(109,255,176,.4);}
+.result-line.lose{color:var(--hostile);text-shadow:0 0 16px rgba(255,77,94,.4);}
+
+/* ---------- HUD ---------- */
+#hud{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:10;
+  font-family:'Exo 2', sans-serif;
+}
+.hud-corner{
+  position:absolute;
+  padding:10px 14px;
+  background:rgba(6,12,20,.55);
+  border:1px solid var(--panel-line);
+  border-radius:3px;
+}
+#panel-throttle{top:14px;left:14px;width:150px;}
+#panel-weapons{bottom:14px;left:14px;width:190px;}
+#panel-target{top:14px;right:14px;width:200px;}
+#panel-radar{bottom:14px;right:14px;width:150px;height:150px;padding:8px;}
+.panel-label{
+  font-family:'Orbitron', sans-serif;
+  font-size:9.5px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin:0 0 6px;
+}
+.bar-track{
+  height:7px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--panel-line);
+  border-radius:2px;
+  overflow:hidden;
+  margin-bottom:8px;
+}
+.bar-fill{height:100%;border-radius:1px;}
+.bar-fill.speed{background:linear-gradient(90deg,var(--cyan-dim),var(--cyan));}
+.bar-fill.weapon{background:linear-gradient(90deg,#7a5b1e,var(--amber));}
+.bar-fill.boost{background:linear-gradient(90deg,#7a2f8a,#d977ff);}
+.readout{font-variant-numeric:tabular-nums;font-size:12px;color:#dff6ff;display:flex;justify-content:space-between;margin-bottom:2px;}
+#missile-count{font-family:'Orbitron', sans-serif;font-size:18px;color:#eafcff;font-variant-numeric:tabular-nums;}
+
+#panel-target{display:none;}
+#panel-target.active{display:block;}
+#t-name{font-family:'Orbitron', sans-serif;font-weight:700;font-size:13px;color:#eafcff;margin-bottom:2px;}
+#t-class{font-size:10.5px;color:var(--text-dim);margin-bottom:8px;}
+#t-hullbar{height:6px;background:rgba(255,255,255,.06);border:1px solid var(--panel-line);border-radius:2px;overflow:hidden;margin-bottom:6px;}
+#t-hullfill{height:100%;background:linear-gradient(90deg,#7a1f1f,var(--hostile));}
+#t-dist{font-size:11px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+#t-sub{font-size:10.5px;color:var(--amber);margin-top:6px;min-height:14px;}
+
+#panel-vitals{
+  position:absolute;
+  bottom:14px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+#shield-diamond{width:88px;height:88px;position:relative;}
+.shield-quad{position:absolute;width:36px;height:36px;background:rgba(90,209,255,.5);border:1px solid rgba(90,209,255,.9);}
+.shield-quad.front{top:0;left:26px;clip-path:polygon(50% 0,100% 100%,0 100%);}
+.shield-quad.back{bottom:0;left:26px;clip-path:polygon(50% 100%,100% 0,0 0);}
+.shield-quad.left{left:0;top:26px;clip-path:polygon(0 50%,100% 0,100% 100%);}
+.shield-quad.right{right:0;top:26px;clip-path:polygon(100% 50%,0 0,0 100%);}
+#hull-track{width:150px;}
+#hull-label{font-family:'Orbitron', sans-serif;font-size:10px;letter-spacing:.15em;color:var(--text-dim);text-transform:uppercase;}
+
+/* cursor-driven flight reticle: follows the actual mouse position (Freelancer-style
+   virtual-joystick steering) -- offset from screen center sets turn rate, not raw delta */
+#crosshair{
+  position:absolute;
+  top:0;left:0;
+  width:0;height:0;
+  pointer-events:none;
+  z-index:9;
+}
+.ch-ring{position:absolute;width:26px;height:26px;left:-13px;top:-13px;border:1.5px solid rgba(77,232,255,.85);border-radius:50%;}
+.ch-dot{position:absolute;width:3px;height:3px;left:-1.5px;top:-1.5px;background:var(--cyan);border-radius:50%;}
+.ch-post{position:absolute;background:rgba(77,232,255,.5);}
+.ch-post.h{width:10px;height:1.5px;top:-0.75px;}
+.ch-post.h.l{left:-22px;}
+.ch-post.h.r{left:12px;}
+.ch-post.v{width:1.5px;height:10px;left:-0.75px;}
+.ch-post.v.t{top:-22px;}
+.ch-post.v.b{top:12px;}
+
+/* center dead-zone ring: staying inside it means "fly straight" */
+#deadzoneRing{
+  position:absolute;
+  top:50%;left:50%;
+  width:96px;height:96px;
+  border:1px dashed rgba(127,163,184,.35);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:8;
+  transform:translate(-50%,-50%);
+}
+
+/* lock-on brackets: anchored to the target's own screen position, independent of the cursor */
+/* the selected target (T to cycle) -- always shown, independent of missile lock */
+#targetRing{
+  position:absolute;top:0;left:0;
+  width:34px;height:34px;margin:-17px 0 0 -17px;
+  border:1.5px solid rgba(235,250,255,.85);
+  border-radius:3px;
+  pointer-events:none;
+  z-index:8;
+  display:none;
+  box-shadow:0 0 8px rgba(77,232,255,.35);
+}
+#targetRing::before, #targetRing::after{
+  content:'';
+  position:absolute;
+  width:6px;height:6px;
+  border-top:1.5px solid #eafcff;
+  top:-1.5px;
+}
+#targetRing::before{ left:-1.5px; border-left:1.5px solid #eafcff; }
+#targetRing::after{ right:-1.5px; border-right:1.5px solid #eafcff; }
+
+#lockBox{position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;z-index:9;}
+.lock-bracket{position:absolute;width:8px;height:8px;border:2px solid var(--amber);opacity:0;}
+.lock-bracket.visible{opacity:1;}
+
+#navMarker{position:absolute;width:0;height:0;pointer-events:none;z-index:8;display:none;}
+.nav-diamond{
+  position:absolute;width:16px;height:16px;left:-8px;top:-8px;
+  border:2px solid var(--hull-ok);
+  background:rgba(109,255,176,.12);
+  transform:rotate(45deg);
+}
+.nav-arrow{
+  position:absolute;width:0;height:0;left:-8px;top:-18px;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-bottom:15px solid var(--hull-ok);
+  display:none;
+  transform-origin:8px 18px;
+}
+.nav-label{
+  position:absolute;left:13px;top:-6px;
+  font-family:'Orbitron', sans-serif;
+  font-size:9.5px;
+  letter-spacing:.12em;
+  color:var(--hull-ok);
+  white-space:nowrap;
+  text-shadow:0 0 6px rgba(0,0,0,.8);
+}
+
+#comms{
+  position:absolute;
+  top:14px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  z-index:11;
+}
+.comm-msg{
+  font-family:'Orbitron', sans-serif;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#eafcff;
+  background:rgba(6,12,20,.6);
+  border:1px solid var(--panel-line);
+  border-radius:3px;
+  padding:6px 14px;
+  opacity:0;
+  animation:commIn .35s ease forwards, commOut .4s ease forwards 2.6s;
+  white-space:nowrap;
+}
+@keyframes commIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+@keyframes commOut{to{opacity:0;}}
+
+.hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-dim);letter-spacing:.05em;z-index:11;text-align:center;}
+@media (max-width:640px){
+  #panel-throttle,#panel-weapons{width:120px;padding:8px 10px;}
+  #panel-target{width:150px;}
+  #panel-radar{width:100px;height:100px;}
+}

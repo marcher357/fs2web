@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Void Interceptor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='20'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+<div id="stage">
+  <div id="three-mount"></div>
+
+  <div id="hud">
+    <div class="hud-corner" id="panel-throttle">
+      <p class="panel-label">Throttle</p>
+      <div class="bar-track"><div class="bar-fill speed" id="bar-speed" style="width:0%"></div></div>
+      <div class="readout"><span id="speed-val">0</span><span style="color:var(--text-dim);font-size:10px;">M/S</span></div>
+      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill boost" id="bar-boost" style="width:100%"></div></div>
+      <div class="readout"><span style="color:var(--text-dim);font-size:10px;">AFTERBURNER</span></div>
+    </div>
+
+    <div class="hud-corner" id="panel-weapons">
+      <p class="panel-label">Weapons</p>
+      <div class="bar-track"><div class="bar-fill weapon" id="bar-weapon" style="width:100%"></div></div>
+      <div class="readout"><span style="font-size:10px;color:var(--text-dim);">LASER ENERGY</span></div>
+      <div class="readout" style="margin-top:8px;">
+        <span style="font-size:10px;color:var(--text-dim);">MISSILES</span>
+        <span id="missile-count">6</span>
+      </div>
+      <div class="readout" style="margin-top:4px;">
+        <span style="font-size:10px;color:var(--text-dim);">WING</span>
+        <span id="wing-count">Alpha 2/3</span>
+      </div>
+    </div>
+
+    <div class="hud-corner" id="panel-target">
+      <p class="panel-label">Target</p>
+      <div id="t-name">--</div>
+      <div id="t-class">--</div>
+      <div id="t-hullbar"><div id="t-hullfill" style="width:100%"></div></div>
+      <div id="t-dist">-- m</div>
+      <div id="t-sub"></div>
+    </div>
+
+    <div class="hud-corner" id="panel-radar">
+      <p class="panel-label">Radar</p>
+      <canvas id="radar-canvas" width="120" height="106"></canvas>
+    </div>
+
+    <div id="panel-vitals">
+      <div id="shield-diamond">
+        <div class="shield-quad front" id="sq-front"></div>
+        <div class="shield-quad back" id="sq-back"></div>
+        <div class="shield-quad left" id="sq-left"></div>
+        <div class="shield-quad right" id="sq-right"></div>
+      </div>
+      <div id="hull-label">Hull Integrity</div>
+      <div class="bar-track" id="hull-track"><div class="bar-fill" id="hull-fill" style="width:100%"></div></div>
+    </div>
+
+    <div id="comms"></div>
+    <div class="hint">Move cursor off-center to steer &middot; M1 fire &middot; M2 hold lock / release to fire missile &middot; T target &middot; Q subsystem</div>
+  </div>
+
+  <div id="deadzoneRing"></div>
+
+  <div id="crosshair">
+    <div class="ch-ring"></div>
+    <div class="ch-dot"></div>
+    <div class="ch-post h l"></div>
+    <div class="ch-post h r"></div>
+    <div class="ch-post v t"></div>
+    <div class="ch-post v b"></div>
+  </div>
+
+  <div id="lockBox"></div>
+  <div id="targetRing"></div>
+
+  <div id="navMarker">
+    <div class="nav-diamond" id="navDiamond"></div>
+    <div class="nav-arrow" id="navArrow"></div>
+    <div class="nav-label" id="navLabel">NAV</div>
+  </div>
+
+  <div class="overlay" id="startOverlay">
+    <div class="panel">
+      <p class="eyebrow">GTVA 3rd Fleet &middot; Deneb Patrol Corridor</p>
+      <h1 class="title">Void Interceptor</h1>
+      <div class="briefing">
+        <b>Mission Briefing —</b> Routine patrol, Alpha wing. You'll fly lead with Alpha 2 and Alpha 3 on your
+        flanks. Neo-Terran Front raiders have been probing this corridor for two days running, going after the
+        mining convoy, not us directly — keep them off the freighters. Command doesn't expect trouble on a
+        training run, but if the NTF commits a wing here, a cruiser won't be far behind.
+      </div>
+      <div class="controls-grid">
+        <div class="ctrl-row"><span class="lbl">Steer (offset from center)</span><kbd>MOUSE</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Fire Lasers</span><kbd>LEFT CLICK</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Thrust / Strafe</span><kbd>W A S D</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Lock &amp; Fire Missile</span><kbd>RIGHT CLICK</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Afterburner</span><kbd>SHIFT</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Cycle Target</span><kbd>T</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Cycle Subsystem</span><kbd>Q</kbd></div>
+        <div class="ctrl-row"><span class="lbl">&nbsp;</span><span class="lbl">&nbsp;</span></div>
+      </div>
+      <button class="btn" id="launchBtn">Launch</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="endOverlay" hidden>
+    <div class="panel">
+      <p class="result-line" id="resultLine">Mission Complete</p>
+      <p class="subtitle" id="resultSub" style="text-align:center;">The convoy jumped safely to Deneb Depot.</p>
+      <div class="end-stats">
+        <div class="stat"><b id="stat-kills">0</b><span>Kills</span></div>
+        <div class="stat"><b id="stat-time">0:00</b><span>Time</span></div>
+        <div class="stat"><b id="stat-acc">0%</b><span>Accuracy</span></div>
+      </div>
+      <button class="btn" id="restartBtn">Fly Again</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
