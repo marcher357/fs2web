@@ -26,7 +26,7 @@ export function resetGame() {
   document.getElementById('alertOverlay').hidden = true;
 }
 
-const WAVE_SPAWN_MIN_DIST = 1000, WAVE_SPAWN_MAX_DIST = 2000;
+const WAVE_SPAWN_MIN_DIST = 2200, WAVE_SPAWN_MAX_DIST = 2800; // comparable to the cruiser's fixed 2600m spawn
 
 // A random point 1000-2000m from the convoy, in a random direction -- fighters
 // spawn clustered near it and fly in from there rather than appearing on top

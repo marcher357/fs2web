@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { renderer, scene, camera } from './scene.js';
 import { clamp, lerp, forwardFromYawPitch, orientToForward, dist3, UP, screenToWorldDir } from './utils.js';
-import { player, game, enemies, wingmen, projectiles, missiles, particles, landmarks, liveFreighters } from './state.js';
+import { player, game, enemies, wingmen, projectiles, missiles, particles, landmarks, liveFreighters, nearestLiveEnemy } from './state.js';
 import { keys, mouse, requestPointerLock } from './input.js';
 import { updateFighterAI, updateCapitalAI, updateWingmanAI } from './ai.js';
 import { updateMissionFlow, resetGame } from './mission.js';
@@ -96,6 +96,15 @@ function update(dt) {
 
   // ---- targeting / lock ----
   if (game.target && !game.target.alive) { game.target = null; game.targetSub = null; }
+  // Auto-target the nearest hostile whenever nothing is selected, so T is
+  // optional -- but never override a friendly the player picked with F.
+  if (!game.target) {
+    const auto = nearestLiveEnemy(player.pos);
+    if (auto) {
+      game.target = auto; game.targetSub = null;
+      comm('TARGET: ' + (auto.kind === 'capital' ? auto.name : auto.klass).toUpperCase());
+    }
+  }
   // game.target can be a wingman too (F cycles friendlies) -- only hostiles
   // (enemies carry a .kind) are ever valid missile-lock candidates.
   let lockCandidate = (game.target && game.target.alive && game.target.kind) ? game.target : nearestEnemyToCrosshair(w, h, 90);

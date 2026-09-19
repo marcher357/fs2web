@@ -115,6 +115,16 @@ let currentObjectiveLabel = 'NAV';
 export function getObjective() {
   const cap = enemies.find(e => e.kind === 'capital' && e.alive);
   if (cap) { currentObjectiveLabel = 'CRUISER'; return cap.pos; }
+  const fighters = enemies.filter(e => e.kind === 'fighter' && e.alive);
+  if (fighters.length) {
+    currentObjectiveLabel = 'HOSTILES';
+    let nearest = fighters[0], nearestD = player.pos.distanceTo(fighters[0].pos);
+    for (const f of fighters) {
+      const d = player.pos.distanceTo(f.pos);
+      if (d < nearestD) { nearestD = d; nearest = f; }
+    }
+    return nearest.pos;
+  }
   if (landmarks.length) { currentObjectiveLabel = 'CONVOY'; return landmarks[0].pos; }
   return null;
 }
@@ -238,7 +248,7 @@ export function drawRadar() {
   radarCtx.strokeStyle = 'rgba(77,232,255,0.25)';
   radarCtx.beginPath(); radarCtx.arc(rw / 2, rh / 2, Math.min(rw, rh) / 2 - 4, 0, TAU); radarCtx.stroke();
   radarCtx.beginPath(); radarCtx.moveTo(rw / 2, 4); radarCtx.lineTo(rw / 2, rh - 4); radarCtx.moveTo(4, rh / 2); radarCtx.lineTo(rw - 4, rh / 2); radarCtx.stroke();
-  const range = 1600, maxR = Math.min(rw, rh) / 2 - 6, scale = maxR / range;
+  const range = 3000, maxR = Math.min(rw, rh) / 2 - 6, scale = maxR / range; // covers the wave/cruiser spawn distance so contacts read as closing in, not just pegged at the edge
   const yaw = player.yaw;
   for (const e of enemies) {
     if (!e.alive) continue;
