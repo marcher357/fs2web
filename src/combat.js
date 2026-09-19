@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
-import { player, game, enemies, wingmen, projectiles, missiles, particles, liveFreighters, nearestLiveEnemy } from './state.js';
+import { player, game, enemies, wingmen, projectiles, missiles, particles, liveFreighters, nearestLiveEnemy, nearestLiveWingman } from './state.js';
 import { forwardFromYawPitch, orientToForward, shieldQuadrantForDir, UP } from './utils.js';
 import { sfx } from './audio.js';
 import { comm, floatText } from './hud.js';
@@ -112,6 +112,11 @@ export function damageWingman(wm, dmg, fromPos) {
     spawnExplosion(wm.pos, 0.9);
     sfx.explosion(false);
     comm(wm.name.toUpperCase() + ' IS DOWN');
+    if (game.target === wm) {
+      game.target = nearestLiveWingman(player.pos);
+      game.targetSub = null;
+      if (game.target) comm('TARGET: ' + game.target.name.toUpperCase());
+    }
   }
 }
 

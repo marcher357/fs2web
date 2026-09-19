@@ -1,4 +1,5 @@
-import { player, game, enemies, clearScene } from './state.js';
+import * as THREE from 'three';
+import { player, game, enemies, clearScene, liveFreighters } from './state.js';
 import { spawnConvoy, spawnWingmen, spawnFighter, spawnCapital } from './entities.js';
 import { comm, showAlert } from './hud.js';
 import { sfx } from './audio.js';
@@ -25,25 +26,38 @@ export function resetGame() {
   document.getElementById('alertOverlay').hidden = true;
 }
 
+const WAVE_SPAWN_MIN_DIST = 1000, WAVE_SPAWN_MAX_DIST = 2000;
+
+// A random point 1000-2000m from the convoy, in a random direction -- fighters
+// spawn clustered near it and fly in from there rather than appearing on top
+// of the player (they already default to targeting the convoy on their own,
+// see updateFighterAI in ai.js, so this just gives them distance to close).
+function randomWaveOrigin() {
+  const freighters = liveFreighters();
+  const anchor = freighters.length ? freighters[0].pos : player.pos;
+  const dist = WAVE_SPAWN_MIN_DIST + Math.random() * (WAVE_SPAWN_MAX_DIST - WAVE_SPAWN_MIN_DIST);
+  const theta = Math.random() * Math.PI * 2;
+  const dir = new THREE.Vector3(Math.cos(theta), (Math.random() - 0.5) * 0.3, Math.sin(theta)).normalize();
+  return anchor.clone().addScaledVector(dir, dist);
+}
+function spawnWaveAt(origin, offsets) {
+  for (const [ox, oy, oz, tough] of offsets) spawnFighter(origin.x + ox, origin.y + oy, origin.z + oz, tough);
+}
+
 export function updateMissionFlow(dt) {
   if (game.stage === 'wave1') {
     game.waveTimer -= dt;
     if (game.waveTimer <= 0) {
-      spawnFighter(player.pos.x + 140, player.pos.y + 10, player.pos.z - 260);
-      spawnFighter(player.pos.x - 150, player.pos.y - 10, player.pos.z - 220);
-      spawnFighter(player.pos.x + 30, player.pos.y + 20, player.pos.z - 340);
+      spawnWaveAt(randomWaveOrigin(), [[60, 10, -30], [-60, -10, 20], [10, 20, -50]]);
       game.stage = 'wave1-active';
       showAlert('WAVE 1: NTF HOSTILES INBOUND');
     }
   } else if (game.stage === 'wave1-active') {
-    if (enemies.length > 0 && enemies.every(e => !e.alive)) { game.stage = 'wave2'; game.waveTimer = 2.2; showAlert('SECTOR CLEAR. STANDBY.'); }
+    if (enemies.length > 0 && enemies.every(e => !e.alive)) { game.stage = 'wave2'; game.waveTimer = 2.2; comm('SECTOR CLEAR. STANDBY.'); }
   } else if (game.stage === 'wave2') {
     game.waveTimer -= dt;
     if (game.waveTimer <= 0) {
-      spawnFighter(player.pos.x + 160, player.pos.y + 10, player.pos.z - 260);
-      spawnFighter(player.pos.x - 140, player.pos.y - 20, player.pos.z - 300);
-      spawnFighter(player.pos.x + 20, player.pos.y + 30, player.pos.z - 420);
-      spawnFighter(player.pos.x - 40, player.pos.y - 10, player.pos.z - 200, true);
+      spawnWaveAt(randomWaveOrigin(), [[70, 10, -30], [-60, -20, 30], [10, 25, -60], [-20, -10, 10, true]]);
       game.stage = 'wave2-active';
       showAlert('WAVE 2: NTF HOSTILES INBOUND');
     }

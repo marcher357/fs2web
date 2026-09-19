@@ -9,7 +9,7 @@ import { fireLaser, damageEnemy, damagePlayer, damageWingman, damageFreighter, s
 import { audioInit, sfx } from './audio.js';
 import {
   updateHUD, drawCrosshair, drawTargetRing, drawLockBracket, drawFloaters,
-  drawNavMarker, drawRadar, tickFloaters, nearestEnemyToCrosshair, comm,
+  drawNavMarker, drawRadar, drawHoverTooltip, tickFloaters, nearestEnemyToCrosshair, comm,
 } from './hud.js';
 
 const MISSILE_REGEN_INTERVAL = 12; // seconds per missile, only while below max
@@ -96,7 +96,9 @@ function update(dt) {
 
   // ---- targeting / lock ----
   if (game.target && !game.target.alive) { game.target = null; game.targetSub = null; }
-  let lockCandidate = (game.target && game.target.alive) ? game.target : nearestEnemyToCrosshair(w, h, 90);
+  // game.target can be a wingman too (F cycles friendlies) -- only hostiles
+  // (enemies carry a .kind) are ever valid missile-lock candidates.
+  let lockCandidate = (game.target && game.target.alive && game.target.kind) ? game.target : nearestEnemyToCrosshair(w, h, 90);
   if (mouse.rdown && lockCandidate && dist3(player.pos, lockCandidate.pos) < 1400) {
     if (game.lockTarget !== lockCandidate) { game.lockTarget = lockCandidate; game.lockProgress = 0; }
     const wasLocked = game.lockProgress >= 1;
@@ -238,6 +240,7 @@ function render() {
   drawLockBracket(w, h);
   drawFloaters(w, h);
   drawNavMarker(w, h);
+  drawHoverTooltip(w, h);
   drawRadar();
 }
 

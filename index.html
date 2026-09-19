@@ -74,7 +74,7 @@
     </div>
 
     <div id="comms"></div>
-    <div class="hint">Move cursor off-center to steer &middot; M1 fire &middot; M2 hold lock / release to fire missile &middot; T target &middot; Q subsystem &middot; M match target speed &middot; Backspace full stop &middot; Esc releases cursor</div>
+    <div class="hint">Move cursor off-center to steer &middot; M1 fire &middot; M2 hold lock / release to fire missile &middot; T hostile target &middot; F friendly target &middot; Q subsystem &middot; M match target speed &middot; Backspace full stop &middot; Esc releases cursor</div>
   </div>
 
   <div id="deadzoneRing"></div>
@@ -93,6 +93,13 @@
 
   <div id="targetDirMarker">
     <div class="target-arrow" id="targetArrow"></div>
+  </div>
+
+  <div id="hoverTooltip" hidden>
+    <div class="hover-name" id="hoverName"></div>
+    <div class="hover-class" id="hoverClass"></div>
+    <div class="hover-hullbar"><div class="hover-hullfill" id="hoverHullFill"></div></div>
+    <div class="hover-hulltext" id="hoverHullText"></div>
   </div>
 
   <div id="navMarker">
@@ -117,7 +124,8 @@
         <div class="ctrl-row"><span class="lbl">Thrust / Strafe</span><kbd>W A S D</kbd></div>
         <div class="ctrl-row"><span class="lbl">Lock &amp; Fire Missile</span><kbd>RIGHT CLICK</kbd></div>
         <div class="ctrl-row"><span class="lbl">Afterburner</span><kbd>SHIFT</kbd></div>
-        <div class="ctrl-row"><span class="lbl">Cycle Target</span><kbd>T</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Cycle Hostile Target</span><kbd>T</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Cycle Friendly Target</span><kbd>F</kbd></div>
         <div class="ctrl-row"><span class="lbl">Cycle Subsystem</span><kbd>Q</kbd></div>
         <div class="ctrl-row"><span class="lbl">Full Stop</span><kbd>BACKSPACE</kbd></div>
         <div class="ctrl-row"><span class="lbl">Match Target Speed</span><kbd>M</kbd></div>

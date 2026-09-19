@@ -72,3 +72,11 @@ export function nearestLiveEnemy(fromPos) {
   }
   return best;
 }
+export function nearestLiveWingman(fromPos) {
+  let best = null, bestD = Infinity;
+  for (const wm of liveWingmen()) {
+    const dd = fromPos.distanceTo(wm.pos);
+    if (dd < bestD) { bestD = dd; best = wm; }
+  }
+  return best;
+}

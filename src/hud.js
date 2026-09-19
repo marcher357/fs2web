@@ -11,6 +11,18 @@ export function comm(msg) {
 }
 export function floatText(pos, text, color) { floaters.push({ pos: pos.clone(), text, color: color || '#eafcff', life: 1.0 }); }
 
+// Fighters/wingmen show as {class name, callsign}; capital ships (proper
+// names) show as {proper name, class}; freighters have no class at all, so
+// they just show their name with no subtitle.
+export function targetLabels(t) {
+  if (t.kind === 'capital') return { primary: t.name, secondary: t.klass };
+  if (t.klass) return { primary: t.klass, secondary: t.name };
+  return { primary: t.name, secondary: '' };
+}
+export function targetHullPct(t) {
+  return t.kind === 'capital' ? t.core.hp / t.core.hpMax : t.hull / t.hullMax;
+}
+
 // A blocking "incoming transmission" dialog for mission-stage changes (new
 // wave, sector clear, boss contact) -- unlike comm()'s transient toasts, this
 // pauses play (see game.paused in main.js's loop) until the player acks it.
@@ -40,6 +52,14 @@ export function cycleTarget() {
   game.target = live[idx]; game.targetSub = null; game.lockTarget = null; game.lockProgress = 0;
   comm('TARGET: ' + (game.target.kind === 'capital' ? game.target.name : game.target.klass).toUpperCase());
 }
+export function cycleFriendlyTarget() {
+  const live = [...liveWingmen(), ...liveFreighters()].sort((a, b) => player.pos.distanceTo(a.pos) - player.pos.distanceTo(b.pos));
+  if (live.length === 0) { comm('NO FRIENDLY CONTACTS'); return; }
+  let idx = (game.target && !game.target.kind) ? live.indexOf(game.target) : -1;
+  idx = (idx + 1) % live.length;
+  game.target = live[idx]; game.targetSub = null; game.lockTarget = null; game.lockProgress = 0;
+  comm('TARGET: ' + game.target.name.toUpperCase());
+}
 export function cycleSubsystem() {
   const t = game.target;
   if (!t || !t.alive || t.kind !== 'capital') return;
@@ -57,6 +77,38 @@ export function nearestEnemyToCrosshair(w, h, maxPx) {
     if (d < bestD) { bestD = d; best = e; }
   }
   return best;
+}
+
+function nearestHoverTarget(w, h, maxPx) {
+  let best = null, bestD = maxPx;
+  for (const t of [...enemies, ...liveWingmen(), ...liveFreighters()]) {
+    if (!t.alive) continue;
+    const s = projectToScreen(camera, t.pos, w, h);
+    if (s.behind) continue;
+    const d = Math.hypot(s.x - mouse.x, s.y - mouse.y);
+    if (d < bestD) { bestD = d; best = t; }
+  }
+  return best;
+}
+export function drawHoverTooltip(w, h) {
+  const tip = document.getElementById('hoverTooltip');
+  const t = nearestHoverTarget(w, h, 40);
+  if (!t) { tip.hidden = true; return; }
+  tip.hidden = false;
+  const isHostile = !!t.kind;
+  tip.classList.toggle('hostile', isHostile);
+  tip.classList.toggle('friendly', !isHostile);
+  const labels = targetLabels(t);
+  document.getElementById('hoverName').textContent = labels.primary;
+  const classEl = document.getElementById('hoverClass');
+  classEl.textContent = labels.secondary;
+  classEl.style.display = labels.secondary ? 'block' : 'none';
+  const hpct = clamp(targetHullPct(t), 0, 1);
+  const fill = document.getElementById('hoverHullFill');
+  fill.style.width = (hpct * 100) + '%';
+  fill.style.background = hpct > 0.5 ? 'linear-gradient(90deg,#0a5a34,var(--hull-ok))' : hpct > 0.22 ? 'linear-gradient(90deg,#6a4a10,var(--hull-warn))' : 'linear-gradient(90deg,#6a1010,var(--hull-crit))';
+  document.getElementById('hoverHullText').textContent = Math.round(hpct * 100) + '% HULL';
+  tip.style.transform = 'translate(' + (mouse.x + 16) + 'px,' + (mouse.y + 16) + 'px)';
 }
 
 let currentObjectiveLabel = 'NAV';
@@ -255,8 +307,9 @@ export function updateHUD() {
   const tp = document.getElementById('panel-target');
   if (game.target && game.target.alive) {
     tp.classList.add('active');
-    document.getElementById('t-name').textContent = game.target.kind === 'capital' ? game.target.name : game.target.klass;
-    document.getElementById('t-class').textContent = game.target.kind === 'capital' ? game.target.klass : game.target.name;
+    const labels = targetLabels(game.target);
+    document.getElementById('t-name').textContent = labels.primary;
+    document.getElementById('t-class').textContent = labels.secondary;
     let hullPct;
     if (game.target.kind === 'capital') {
       if (game.targetSub != null && game.target.subsystems[game.targetSub]) {

@@ -338,6 +338,26 @@ body{
   filter:drop-shadow(0 0 4px rgba(255,179,71,.6));
 }
 
+/* Hover tooltip: whatever's under the cursor, no need to select it first */
+#hoverTooltip{
+  position:absolute;
+  top:0;left:0;
+  z-index:12;
+  pointer-events:none;
+  min-width:120px;
+  padding:6px 10px;
+  background:rgba(6,12,20,.8);
+  border:1px solid var(--panel-line);
+  border-radius:3px;
+}
+#hoverTooltip.hostile{border-color:rgba(255,77,94,.5);}
+#hoverTooltip.friendly{border-color:rgba(90,209,255,.4);}
+.hover-name{font-family:'Orbitron', sans-serif;font-weight:700;font-size:12px;color:#eafcff;white-space:nowrap;}
+.hover-class{font-size:10px;color:var(--text-dim);margin-bottom:6px;white-space:nowrap;}
+.hover-hullbar{height:5px;background:rgba(255,255,255,.06);border:1px solid var(--panel-line);border-radius:2px;overflow:hidden;margin-bottom:3px;}
+.hover-hullfill{height:100%;}
+.hover-hulltext{font-size:9.5px;color:var(--text-dim);letter-spacing:.05em;}
+
 #lockBox{position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;z-index:9;}
 .lock-bracket{position:absolute;width:8px;height:8px;border:2px solid var(--amber);opacity:0;}
 .lock-bracket.visible{opacity:1;}
