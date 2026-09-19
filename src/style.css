@@ -153,6 +153,19 @@ body{
 .result-line.win{color:var(--hull-ok);text-shadow:0 0 16px rgba(109,255,176,.4);}
 .result-line.lose{color:var(--hostile);text-shadow:0 0 16px rgba(255,77,94,.4);}
 
+/* Mission-stage-change alert (new wave, sector clear, etc.) -- pauses play
+   until acknowledged, unlike the transient comm-log toasts. */
+.alert-panel{width:min(420px,100%);text-align:center;padding:28px clamp(20px,5vw,36px);}
+.alert-msg{
+  font-family:'Orbitron', sans-serif;
+  font-weight:700;
+  font-size:18px;
+  letter-spacing:.06em;
+  color:#eafcff;
+  margin:4px 0 22px;
+  text-shadow:0 0 14px rgba(77,232,255,.35);
+}
+
 /* ---------- HUD ---------- */
 #hud{
   position:absolute;
@@ -192,6 +205,43 @@ body{
 .bar-fill.speed{background:linear-gradient(90deg,var(--cyan-dim),var(--cyan));}
 .bar-fill.weapon{background:linear-gradient(90deg,#7a5b1e,var(--amber));}
 .bar-fill.boost{background:linear-gradient(90deg,#7a2f8a,#d977ff);}
+
+/* Velocity is Newtonian (no drag), so facing and actual motion can diverge --
+   this shows drift relative to where the ship is pointed: dot above center =
+   moving forward, below = backward, left/right = lateral drift, distance
+   from center = how much. */
+.drift-gauge{
+  position:relative;
+  width:100%;
+  height:54px;
+  margin-top:8px;
+  border:1px solid var(--panel-line);
+  border-radius:3px;
+  background:rgba(0,0,0,.25);
+  overflow:hidden;
+}
+.drift-cross{position:absolute;background:rgba(127,163,184,.25);}
+.drift-cross.h{left:0;right:0;top:50%;height:1px;}
+.drift-cross.v{top:0;bottom:0;left:50%;width:1px;}
+.drift-lbl{
+  position:absolute;
+  font-size:8.5px;
+  letter-spacing:.1em;
+  color:var(--text-dim);
+}
+.drift-lbl.f{top:2px;left:50%;transform:translateX(-50%);}
+.drift-lbl.b{bottom:2px;left:50%;transform:translateX(-50%);}
+.drift-lbl.l{left:3px;top:50%;transform:translateY(-50%);}
+.drift-lbl.r{right:3px;top:50%;transform:translateY(-50%);}
+.drift-dot{
+  position:absolute;
+  width:7px;height:7px;
+  left:50%;top:50%;
+  margin:-3.5px 0 0 -3.5px;
+  border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 6px rgba(77,232,255,.85);
+}
 .readout{font-variant-numeric:tabular-nums;font-size:12px;color:#dff6ff;display:flex;justify-content:space-between;margin-bottom:2px;}
 #missile-count{font-family:'Orbitron', sans-serif;font-size:18px;color:#eafcff;font-variant-numeric:tabular-nums;}
 
@@ -275,6 +325,18 @@ body{
 }
 #targetRing::before{ left:-1.5px; border-left:1.5px solid #eafcff; }
 #targetRing::after{ right:-1.5px; border-right:1.5px solid #eafcff; }
+
+/* off-screen pointer to the selected (T) target -- same edge-arrow pattern as
+   #navMarker, but for the target instead of the mission objective */
+#targetDirMarker{position:absolute;width:0;height:0;pointer-events:none;z-index:8;display:none;}
+.target-arrow{
+  position:absolute;width:0;height:0;left:-8px;top:-18px;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-bottom:15px solid var(--amber);
+  transform-origin:8px 18px;
+  filter:drop-shadow(0 0 4px rgba(255,179,71,.6));
+}
 
 #lockBox{position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;z-index:9;}
 .lock-bracket{position:absolute;width:8px;height:8px;border:2px solid var(--amber);opacity:0;}

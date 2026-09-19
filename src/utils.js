@@ -33,3 +33,13 @@ export function projectToScreen(camera, worldPos, w, h) {
   _screenPos.copy(worldPos).project(camera);
   return { x: (_screenPos.x * 0.5 + 0.5) * w, y: (-_screenPos.y * 0.5 + 0.5) * h, behind: _screenPos.z > 1 };
 }
+
+// Inverse of projectToScreen: the world-space ray direction from the camera
+// through a screen point (the crosshair/cursor position) -- lets weapons aim
+// at wherever the reticle actually is instead of just the ship's nose.
+const _ndc = new THREE.Vector3();
+export function screenToWorldDir(camera, x, y, w, h) {
+  _ndc.set((x / w) * 2 - 1, -(y / h) * 2 + 1, 0.5);
+  _ndc.unproject(camera);
+  return _ndc.sub(camera.position).normalize().clone();
+}

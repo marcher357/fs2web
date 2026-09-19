@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
-import { player, game, enemies, wingmen, projectiles, missiles, particles, liveFreighters } from './state.js';
+import { player, game, enemies, wingmen, projectiles, missiles, particles, liveFreighters, nearestLiveEnemy } from './state.js';
 import { forwardFromYawPitch, orientToForward, shieldQuadrantForDir, UP } from './utils.js';
 import { sfx } from './audio.js';
 import { comm, floatText } from './hud.js';
@@ -94,7 +94,11 @@ export function killEnemy(e) {
   sfx.explosion(e.kind === 'capital');
   game.kills++;
   comm((e.kind === 'capital' ? e.name : e.klass).toUpperCase() + ' DESTROYED');
-  if (game.target === e) { game.target = null; game.targetSub = null; }
+  if (game.target === e) {
+    game.target = nearestLiveEnemy(player.pos);
+    game.targetSub = null;
+    if (game.target) comm('TARGET: ' + (game.target.kind === 'capital' ? game.target.name : game.target.klass).toUpperCase());
+  }
   if (game.lockTarget === e) { game.lockTarget = null; game.lockProgress = 0; }
 }
 

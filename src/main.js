@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { renderer, scene, camera } from './scene.js';
-import { clamp, lerp, forwardFromYawPitch, orientToForward, dist3, UP } from './utils.js';
+import { clamp, lerp, forwardFromYawPitch, orientToForward, dist3, UP, screenToWorldDir } from './utils.js';
 import { player, game, enemies, wingmen, projectiles, missiles, particles, landmarks, liveFreighters } from './state.js';
-import { keys, mouse } from './input.js';
+import { keys, mouse, requestPointerLock } from './input.js';
 import { updateFighterAI, updateCapitalAI, updateWingmanAI } from './ai.js';
 import { updateMissionFlow, resetGame } from './mission.js';
 import { fireLaser, damageEnemy, damagePlayer, damageWingman, damageFreighter, spawnSpark, spawnExplosion, subsystemWorldPos } from './combat.js';
@@ -11,6 +11,8 @@ import {
   updateHUD, drawCrosshair, drawTargetRing, drawLockBracket, drawFloaters,
   drawNavMarker, drawRadar, tickFloaters, nearestEnemyToCrosshair, comm,
 } from './hud.js';
+
+const MISSILE_REGEN_INTERVAL = 12; // seconds per missile, only while below max
 
 function update(dt) {
   game.time += dt;
@@ -70,10 +72,22 @@ function update(dt) {
   if (mouse.down && player.fireCooldown <= 0 && player.weaponEnergy >= 6 && player.alive) {
     player.fireCooldown = 0.11;
     player.weaponEnergy -= 6;
+    const aimDir = screenToWorldDir(camera, mouse.x, mouse.y, w, h);
     const nosePos = player.pos.clone().addScaledVector(forward, 5);
-    fireLaser(nosePos, forward, 'player', 10, 340);
+    fireLaser(nosePos, aimDir, 'player', 10, 340);
     sfx.laser();
     game.shotsFired++;
+  }
+
+  // missiles regenerate slowly on their own, one at a time
+  if (player.missiles < player.missilesMax) {
+    player.missileRegenTimer += dt;
+    if (player.missileRegenTimer >= MISSILE_REGEN_INTERVAL) {
+      player.missileRegenTimer -= MISSILE_REGEN_INTERVAL;
+      player.missiles++;
+    }
+  } else {
+    player.missileRegenTimer = 0;
   }
 
   // shield regen
@@ -231,7 +245,7 @@ let last = performance.now();
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
-  if (game.running) update(dt);
+  if (game.running && !game.paused) update(dt);
   render();
   requestAnimationFrame(loop);
 }
@@ -243,11 +257,13 @@ document.getElementById('launchBtn').addEventListener('click', () => {
   audioInit();
   document.getElementById('startOverlay').hidden = true;
   resetGame();
+  requestPointerLock();
   comm('MISSION START: PATROL CORRIDOR');
 });
 document.getElementById('restartBtn').addEventListener('click', () => {
   document.getElementById('endOverlay').hidden = true;
   resetGame();
+  requestPointerLock();
   comm('MISSION START: PATROL CORRIDOR');
 });
 

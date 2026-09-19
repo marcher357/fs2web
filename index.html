@@ -23,6 +23,15 @@
       <div class="readout"><span id="speed-val">0</span><span style="color:var(--text-dim);font-size:10px;">M/S</span></div>
       <div class="bar-track" style="margin-top:6px;"><div class="bar-fill boost" id="bar-boost" style="width:100%"></div></div>
       <div class="readout"><span style="color:var(--text-dim);font-size:10px;">AFTERBURNER</span></div>
+      <div class="drift-gauge" id="drift-gauge">
+        <div class="drift-cross h"></div>
+        <div class="drift-cross v"></div>
+        <span class="drift-lbl f">F</span>
+        <span class="drift-lbl b">B</span>
+        <span class="drift-lbl l">L</span>
+        <span class="drift-lbl r">R</span>
+        <div class="drift-dot" id="drift-dot"></div>
+      </div>
     </div>
 
     <div class="hud-corner" id="panel-weapons">
@@ -65,7 +74,7 @@
     </div>
 
     <div id="comms"></div>
-    <div class="hint">Move cursor off-center to steer &middot; M1 fire &middot; M2 hold lock / release to fire missile &middot; T target &middot; Q subsystem</div>
+    <div class="hint">Move cursor off-center to steer &middot; M1 fire &middot; M2 hold lock / release to fire missile &middot; T target &middot; Q subsystem &middot; M match target speed &middot; Backspace full stop &middot; Esc releases cursor</div>
   </div>
 
   <div id="deadzoneRing"></div>
@@ -81,6 +90,10 @@
 
   <div id="lockBox"></div>
   <div id="targetRing"></div>
+
+  <div id="targetDirMarker">
+    <div class="target-arrow" id="targetArrow"></div>
+  </div>
 
   <div id="navMarker">
     <div class="nav-diamond" id="navDiamond"></div>
@@ -106,7 +119,8 @@
         <div class="ctrl-row"><span class="lbl">Afterburner</span><kbd>SHIFT</kbd></div>
         <div class="ctrl-row"><span class="lbl">Cycle Target</span><kbd>T</kbd></div>
         <div class="ctrl-row"><span class="lbl">Cycle Subsystem</span><kbd>Q</kbd></div>
-        <div class="ctrl-row"><span class="lbl">&nbsp;</span><span class="lbl">&nbsp;</span></div>
+        <div class="ctrl-row"><span class="lbl">Full Stop</span><kbd>BACKSPACE</kbd></div>
+        <div class="ctrl-row"><span class="lbl">Match Target Speed</span><kbd>M</kbd></div>
       </div>
       <button class="btn" id="launchBtn">Launch</button>
     </div>
@@ -122,6 +136,14 @@
         <div class="stat"><b id="stat-acc">0%</b><span>Accuracy</span></div>
       </div>
       <button class="btn" id="restartBtn">Fly Again</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="alertOverlay" hidden>
+    <div class="panel alert-panel">
+      <p class="eyebrow">Incoming Transmission</p>
+      <p class="alert-msg" id="alertMsg">WAVE 1: NTF HOSTILES INBOUND</p>
+      <button class="btn" id="alertOkBtn">OK</button>
     </div>
   </div>
 </div>

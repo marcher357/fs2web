@@ -1,5 +1,6 @@
+import * as THREE from 'three';
 import { camera } from './scene.js';
-import { clamp, lerp, TAU, projectToScreen } from './utils.js';
+import { clamp, lerp, TAU, projectToScreen, forwardFromYawPitch, UP } from './utils.js';
 import { player, game, enemies, wingmen, landmarks, liveWingmen, liveFreighters, floaters, setFloaters } from './state.js';
 import { mouse } from './input.js';
 
@@ -10,8 +11,29 @@ export function comm(msg) {
 }
 export function floatText(pos, text, color) { floaters.push({ pos: pos.clone(), text, color: color || '#eafcff', life: 1.0 }); }
 
+// A blocking "incoming transmission" dialog for mission-stage changes (new
+// wave, sector clear, boss contact) -- unlike comm()'s transient toasts, this
+// pauses play (see game.paused in main.js's loop) until the player acks it.
+const alertOverlay = document.getElementById('alertOverlay');
+export function showAlert(msg) {
+  game.paused = true;
+  document.getElementById('alertMsg').textContent = msg;
+  alertOverlay.hidden = false;
+}
+function hideAlert() {
+  alertOverlay.hidden = true;
+  game.paused = false;
+}
+document.getElementById('alertOkBtn').addEventListener('click', hideAlert);
+document.addEventListener('keydown', e => {
+  if (!alertOverlay.hidden && (e.code === 'Enter' || e.code === 'NumpadEnter')) {
+    e.preventDefault();
+    hideAlert();
+  }
+});
+
 export function cycleTarget() {
-  const live = enemies.filter(e => e.alive);
+  const live = enemies.filter(e => e.alive).sort((a, b) => player.pos.distanceTo(a.pos) - player.pos.distanceTo(b.pos));
   if (live.length === 0) { game.target = null; comm('NO CONTACTS IN RANGE'); return; }
   let idx = game.target ? live.indexOf(game.target) : -1;
   idx = (idx + 1) % live.length;
@@ -77,12 +99,29 @@ export function drawNavMarker(w, h) {
 
 export function drawTargetRing(w, h) {
   const ring = document.getElementById('targetRing');
+  const dirEl = document.getElementById('targetDirMarker');
+  const arrow = document.getElementById('targetArrow');
   const t = game.target;
-  if (!t || !t.alive) { ring.style.display = 'none'; return; }
+  if (!t || !t.alive) { ring.style.display = 'none'; dirEl.style.display = 'none'; return; }
   const s = projectToScreen(camera, t.pos, w, h);
-  if (s.behind) { ring.style.display = 'none'; return; }
-  ring.style.display = 'block';
-  ring.style.transform = 'translate(' + s.x + 'px,' + s.y + 'px)';
+  const cx = w / 2, cy = h / 2;
+  const margin = 40;
+  const onScreen = !s.behind && s.x > margin && s.x < w - margin && s.y > margin && s.y < h - margin;
+  if (onScreen) {
+    ring.style.display = 'block';
+    ring.style.transform = 'translate(' + s.x + 'px,' + s.y + 'px)';
+    dirEl.style.display = 'none';
+  } else {
+    ring.style.display = 'none';
+    let dx = s.x - cx, dy = s.y - cy;
+    if (s.behind) { dx = -dx; dy = -dy; }
+    const ang = Math.atan2(dy, dx);
+    const R = Math.min(w, h) / 2 - 42;
+    const ex = cx + Math.cos(ang) * R, ey = cy + Math.sin(ang) * R;
+    dirEl.style.display = 'block';
+    dirEl.style.transform = 'translate(' + ex + 'px,' + ey + 'px)';
+    arrow.style.transform = 'rotate(' + (ang * 180 / Math.PI + 90) + 'deg)';
+  }
 }
 
 let bracketEls = null;
@@ -102,7 +141,6 @@ export function drawLockBracket(w, h) {
       bracketEls[i].style.left = (s.x + sx * sizeBase - 4) + 'px';
       bracketEls[i].style.top = (s.y + sy * sizeBase - 4) + 'px';
       bracketEls[i].classList.toggle('visible', !s.behind);
-      bracketEls[i].style.opacity = s.behind ? 0 : 1;
     }
   } else {
     for (const el of bracketEls) el.classList.remove('visible');
@@ -190,6 +228,14 @@ export function updateHUD() {
   document.getElementById('bar-speed').style.width = clamp(sp / 150 * 100, 0, 100) + '%';
   document.getElementById('speed-val').textContent = Math.round(sp);
   document.getElementById('bar-boost').style.width = clamp(player.boost / player.boostMax * 100, 0, 100) + '%';
+  const driftForward = forwardFromYawPitch(player.yaw, player.pitch);
+  const driftRight = new THREE.Vector3().crossVectors(driftForward, UP).normalize();
+  const vFwd = player.vel.dot(driftForward), vRight = player.vel.dot(driftRight);
+  const driftMax = 150; // matches the un-boosted max speed clamp in main.js
+  const dx = clamp(vRight / driftMax, -1, 1), dy = clamp(-vFwd / driftMax, -1, 1);
+  const dot = document.getElementById('drift-dot');
+  dot.style.left = (50 + dx * 44) + '%';
+  dot.style.top = (50 + dy * 44) + '%';
   document.getElementById('bar-weapon').style.width = clamp(player.weaponEnergy / player.weaponEnergyMax * 100, 0, 100) + '%';
   document.getElementById('missile-count').textContent = player.missiles;
   const wingAlive = liveWingmen();

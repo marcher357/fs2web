@@ -11,7 +11,7 @@ export const player = {
   shields: { front: 55, back: 55, left: 55, right: 55 }, shieldMax: 55,
   shieldRegenDelay: 0,
   weaponEnergy: 100, weaponEnergyMax: 100,
-  missiles: 6, missilesMax: 6,
+  missiles: 6, missilesMax: 6, missileRegenTimer: 0,
   boost: 100, boostMax: 100,
   fireCooldown: 0,
   alive: true,
@@ -36,7 +36,7 @@ export function setObjectiveLabel(label) { currentObjectiveLabel = label; }
 export function setFloaters(next) { floaters = next; }
 
 export const game = {
-  running: false, time: 0, stage: 'idle', waveTimer: 0,
+  running: false, paused: false, time: 0, stage: 'idle', waveTimer: 0,
   kills: 0, shotsFired: 0, shotsHit: 0,
   target: null, targetSub: null, lockTarget: null, lockProgress: 0,
   shake: 0,
@@ -60,6 +60,15 @@ export function nearestCombatant(fromPos) {
   for (const wm of liveWingmen()) {
     const dd = fromPos.distanceTo(wm.pos);
     if (dd < bestD) { bestD = dd; best = wm; }
+  }
+  return best;
+}
+export function nearestLiveEnemy(fromPos) {
+  let best = null, bestD = Infinity;
+  for (const e of enemies) {
+    if (!e.alive) continue;
+    const dd = fromPos.distanceTo(e.pos);
+    if (dd < bestD) { bestD = dd; best = e; }
   }
   return best;
 }
