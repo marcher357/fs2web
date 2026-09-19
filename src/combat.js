@@ -105,6 +105,10 @@ export function killEnemy(e) {
 export function damageWingman(wm, dmg, fromPos) {
   if (!wm.alive) return;
   wm.hull -= dmg;
+  if (game.formationOrder) {
+    game.formationOrder = false;
+    comm('WINGMEN: FORM UP ORDER CANCELED, ENGAGING');
+  }
   floatText(wm.pos.clone().add(new THREE.Vector3(0, 6, 0)), '-' + Math.round(dmg), '#ffb347');
   if (wm.hull <= 0) {
     wm.alive = false;

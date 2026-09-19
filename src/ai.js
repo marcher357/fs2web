@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { player, enemies, wingmen, nearestCombatant, liveFreighters } from './state.js';
+import { player, game, enemies, wingmen, nearestCombatant, liveFreighters } from './state.js';
 import { orientToForward, UP } from './utils.js';
 import { fireLaser, subsystemWorldPos } from './combat.js';
 import { sfx } from './audio.js';
@@ -91,16 +91,21 @@ export function updateCapitalAI(e, dt) {
 }
 
 export function updateWingmanAI(wm, dt) {
-  // pick or keep an enemy fighter target
-  if (!wm.targetEnemy || !wm.targetEnemy.alive) {
-    let best = null, bestD = 1100;
-    for (const e of enemies) {
-      if (!e.alive || e.kind !== 'fighter') continue;
-      const dd = wm.pos.distanceTo(e.pos);
-      if (dd < bestD) { bestD = dd; best = e; }
+  if (!game.formationOrder) {
+    // pick or keep an enemy fighter target
+    if (!wm.targetEnemy || !wm.targetEnemy.alive) {
+      let best = null, bestD = 1100;
+      for (const e of enemies) {
+        if (!e.alive || e.kind !== 'fighter') continue;
+        const dd = wm.pos.distanceTo(e.pos);
+        if (dd < bestD) { bestD = dd; best = e; }
+      }
+      if (wm.targetEnemy !== best) { wm.orbitTime = 0; wm.disengageTimer = 0; }
+      wm.targetEnemy = best;
     }
-    if (wm.targetEnemy !== best) { wm.orbitTime = 0; wm.disengageTimer = 0; }
-    wm.targetEnemy = best;
+  } else {
+    // ordered to form up (C) -- ignore hostiles entirely until released
+    wm.targetEnemy = null;
   }
 
   let desiredDir, desiredSpeed;

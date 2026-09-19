@@ -44,6 +44,16 @@ document.addEventListener('keydown', e => {
   }
 });
 
+export function toggleFormationOrder() {
+  game.formationOrder = !game.formationOrder;
+  if (game.formationOrder) {
+    for (const wm of liveWingmen()) wm.targetEnemy = null;
+    comm('WINGMEN: FORM UP ON MY WING');
+  } else {
+    comm('WINGMEN: ENGAGE AT WILL');
+  }
+}
+
 export function cycleTarget() {
   const live = enemies.filter(e => e.alive).sort((a, b) => player.pos.distanceTo(a.pos) - player.pos.distanceTo(b.pos));
   if (live.length === 0) { game.target = null; comm('NO CONTACTS IN RANGE'); return; }

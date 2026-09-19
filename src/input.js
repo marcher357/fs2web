@@ -1,7 +1,7 @@
 import { canvas } from './scene.js';
 import { game, player } from './state.js';
 import { clamp } from './utils.js';
-import { cycleTarget, cycleFriendlyTarget, cycleSubsystem } from './hud.js';
+import { cycleTarget, cycleFriendlyTarget, cycleSubsystem, toggleFormationOrder } from './hud.js';
 import { tryFireMissile } from './combat.js';
 
 export const keys = Object.create(null);
@@ -35,10 +35,11 @@ document.addEventListener('keydown', e => {
   // Tab is deliberately not used for anything: browsers (especially inside an iframe,
   // which is how this page is hosted) often refuse to let content override Tab's
   // focus-navigation even with preventDefault(), so it's an unreliable game key.
-  if (['KeyT', 'KeyF', 'KeyQ', 'KeyM', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'Backspace'].includes(e.code)) e.preventDefault();
+  if (['KeyT', 'KeyF', 'KeyC', 'KeyQ', 'KeyM', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'Backspace'].includes(e.code)) e.preventDefault();
   keys[e.code] = true;
   if (e.code === 'KeyT' && game.running) cycleTarget();
   if (e.code === 'KeyF' && game.running) cycleFriendlyTarget();
+  if (e.code === 'KeyC' && game.running) toggleFormationOrder();
   if (e.code === 'KeyQ' && game.running) cycleSubsystem();
   if (e.code === 'Backspace' && game.running) player.vel.set(0, 0, 0);
   if (e.code === 'KeyM' && game.running && game.target && game.target.alive) player.vel.copy(game.target.vel);

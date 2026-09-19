@@ -1,12 +1,17 @@
 import * as THREE from 'three';
 import { player, game, enemies, clearScene, liveFreighters } from './state.js';
-import { spawnConvoy, spawnWingmen, spawnFighter, spawnCapital } from './entities.js';
+import { spawnConvoy, spawnWingmen, spawnFighter, spawnCapital, CONVOY_ANCHORS } from './entities.js';
 import { comm, showAlert } from './hud.js';
 import { sfx } from './audio.js';
 
 export function resetGame() {
   clearScene();
-  player.pos.set(0, 0, 0); player.vel.set(0, 0, 0); player.yaw = 0; player.pitch = 0;
+  // Start near the convoy (~20m above its midpoint) instead of a disconnected
+  // origin point -- wingmen spawn relative to player.pos, so setting it here
+  // before spawnWingmen() brings them along too.
+  const convoyMid = CONVOY_ANCHORS[0].clone().add(CONVOY_ANCHORS[1]).multiplyScalar(0.5);
+  player.pos.copy(convoyMid).add(new THREE.Vector3(0, 20, 0));
+  player.vel.set(0, 0, 0); player.yaw = 0; player.pitch = 0;
   player.hull = player.hullMax;
   player.shields = { front: 55, back: 55, left: 55, right: 55 };
   player.shieldRegenDelay = 0;
@@ -18,11 +23,12 @@ export function resetGame() {
   player.group.visible = true;
   spawnConvoy();
   spawnWingmen();
-  game.time = 0; game.stage = 'wave1'; game.waveTimer = 1.4;
+  game.time = 0; game.stage = 'wave1'; game.waveTimer = 20;
   game.kills = 0; game.shotsFired = 0; game.shotsHit = 0;
   game.target = null; game.targetSub = null; game.lockTarget = null; game.lockProgress = 0;
   game.running = true;
   game.paused = false;
+  game.formationOrder = false;
   document.getElementById('alertOverlay').hidden = true;
 }
 

@@ -5,9 +5,10 @@ import { player, enemies, landmarks, wingmen, nextId } from './state.js';
 import { comm } from './hud.js';
 import { sfx } from './audio.js';
 
+export const CONVOY_ANCHORS = [new THREE.Vector3(-90, -10, -160), new THREE.Vector3(70, 15, -210)];
+
 export function spawnConvoy() {
-  const anchors = [new THREE.Vector3(-90, -10, -160), new THREE.Vector3(70, 15, -210)];
-  for (const a of anchors) {
+  for (const a of CONVOY_ANCHORS) {
     const mesh = makeFreighterMesh();
     mesh.position.copy(a);
     scene.add(mesh);

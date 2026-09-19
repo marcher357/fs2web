@@ -39,7 +39,7 @@ export const game = {
   running: false, paused: false, time: 0, stage: 'idle', waveTimer: 0,
   kills: 0, shotsFired: 0, shotsHit: 0,
   target: null, targetSub: null, lockTarget: null, lockProgress: 0,
-  shake: 0,
+  shake: 0, formationOrder: false,
 };
 
 export function clearScene() {
